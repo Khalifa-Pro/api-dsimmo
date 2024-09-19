@@ -8,12 +8,12 @@ pipeline {
     stages {
         stage('Install Node.js') {
             steps {
-                // Vérifier si Node.js est installé et l'installer si nécessaire
+                // Installer Node.js sans utiliser sudo
                 sh '''
                     if ! [ -x "$(command -v node)" ]; then
                         echo "Node.js n'est pas installé. Installation en cours..."
-                        curl -sL https://deb.nodesource.com/setup_16.x | sudo -E bash -
-                        sudo apt-get install -y nodejs
+                        curl -sL https://deb.nodesource.com/setup_16.x | bash -
+                        apt-get install -y nodejs
                     else
                         echo "Node.js est déjà installé : $(node -v)"
                     fi
