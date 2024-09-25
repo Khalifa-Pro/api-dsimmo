@@ -22,8 +22,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'username' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:8',
-            'profil' => 'required|string',
-            'etat' => 'required|string',
+            'profil' => 'required|string'
         ]);
 
         $user = User::create([
@@ -63,7 +62,7 @@ class AuthController extends Controller
         $user = User::where('username', $request->username)->firstOrFail();
 
         // Vérification du rôle de l'utilisateur
-        if (!in_array($user->profil, ['PROPRIETAIRE', 'AGENT', 'ADMIN'])) {
+        if (!in_array($user->profil, ['PROPRIETAIRE', 'AGENT', 'ADMINISTRATEUR'])) {
             return response()->json(['message' => 'Access denied: invalid user role'], 403);
         }
 
@@ -75,6 +74,7 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
             'user_role' => $user->profil,
+            'user_id' => $user->id,
         ]);
     }
 

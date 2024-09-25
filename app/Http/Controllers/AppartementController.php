@@ -17,7 +17,7 @@ class AppartementController extends Controller
         // Validation des entrées
         $request->validate([
             'prix' => 'required|numeric',
-            'image' => 'nullable|image|mimes:jpeg,jfif,png,jpg,gif,svg|max:2048', // Validation pour l'image
+            'image' => 'nullable|image|mimes:jpeg,jfif,png,jpg,gif,svg|max:8120',
             'videos' => 'nullable|mimes:mp4,mov,ogg,qt|max:20000', // Validation pour la vidéo
             'adresse' => 'required|string|max:255',
             'status' => 'required|string|max:255',
@@ -83,6 +83,7 @@ class AppartementController extends Controller
             'nombre_de_pieces' => $request->nombre_de_pieces,
             'niveau' => $request->niveau,
             'numero_appartement' => $request->numero_appartement,
+            'description' => $request->description,
             'user_id' => $idProprietaire // Id de l'utilisateur connecté (propriétaire)
         ]);
 
@@ -106,6 +107,27 @@ class AppartementController extends Controller
 
         return response()->json($appartementsDisponibles, 200);
     }
+
+    public function getAllApp(){
+        $appartementsDisponibles = Appartement::all();
+        return response()->json($appartementsDisponibles, 200);
+    }
+
+    /**
+     * Appartements d'un prop
+     */
+    public function getAppartementsByIdProp($proprietaireId)
+    {
+        \Log::info("Récupération des appartements du propriétaire ID: {$proprietaireId}");
+
+        $appartements = Appartement::where('user_id', $proprietaireId) // Filtrer par l'ID du propriétaire
+                                    ->get();
+
+        \Log::info('Appartements disponibles récupérés : ', $appartements->toArray());
+
+        return response()->json($appartements, 200);
+    }
+
 
     /***
      * Archiver un appartement
@@ -158,7 +180,7 @@ class AppartementController extends Controller
     }
 
     /***
-     * Details appartement
+     * Details appartements Proprietaire
      */
     public function detailsAppartement($idProprietaire)
     {
@@ -178,5 +200,24 @@ class AppartementController extends Controller
         // Retourner les détails des appartements
         return response()->json($appartements, 200);
     }
+
+    public function detailsApp($idAppartement) 
+    {
+        \Log::info('Récupération des détails de l\'appartement avec l\'ID : ' . $idAppartement);
+
+        // Récupérer les détails de l'appartement avec l'ID donné
+        $appartement = Appartement::find($idAppartement);
+
+        if (!$appartement) {
+            \Log::info('Aucun appartement trouvé avec l\'ID : ' . $idAppartement);
+            return response()->json(['message' => 'Aucun appartement trouvé'], 404);
+        }
+
+        \Log::info('Appartement trouvé avec l\'ID : ' . $idAppartement, $appartement->toArray());
+
+        // Retourner les détails de l'appartement
+        return response()->json($appartement, 200);
+    }
+
 
 }

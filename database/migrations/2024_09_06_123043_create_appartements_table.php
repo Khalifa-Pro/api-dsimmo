@@ -23,6 +23,7 @@ return new class extends Migration
             $table->integer('nombre_de_pieces');
             $table->integer('niveau')->unsigned();
             $table->string('numero_appartement');
+            $table->longText('description');
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
 

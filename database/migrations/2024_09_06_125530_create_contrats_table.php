@@ -16,18 +16,15 @@ return new class extends Migration
             $table->string('numero_contrat')->unique(); // Numéro unique pour chaque contrat
             $table->date('date_debut'); // Date de début du contrat
             $table->date('date_fin'); // Date de fin du contrat
-            $table->string('type'); // Type de contrat (par exemple : vente, location)
+            $table->string('type'); // Type de contrat (location, vente)
             $table->decimal('montant', 10, 2); // Montant du contrat
-            $table->unsignedBigInteger('appartement_id')->nullable()->unique(); // Colonne pour la clé étrangère de l'appartement
-            $table->unsignedBigInteger('maison_id')->nullable()->unique(); // Colonne pour la clé étrangère de la maison
-            $table->unsignedBigInteger('terrain_id')->nullable()->unique(); // Colonne pour la clé étrangère du terrain
-            $table->unsignedBigInteger('user_id')->nullable();
+            $table->boolean('estValide')->default(false); // Champ pour indiquer si le contrat est validé
+            $table->unsignedBigInteger('appartement_id')->nullable(); // Clé étrangère de l'appartement
+            $table->unsignedBigInteger('user_id')->nullable(); // Clé étrangère du propriétaire
             $table->timestamps();
 
             // Définir les clés étrangères
             $table->foreign('appartement_id')->references('id')->on('appartements')->onDelete('set null');
-            $table->foreign('maison_id')->references('id')->on('maisons')->onDelete('set null');
-            $table->foreign('terrain_id')->references('id')->on('terrains')->onDelete('set null');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

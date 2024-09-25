@@ -7,6 +7,7 @@ use App\Models\DemandeLocation;
 use App\Models\Appartement;
 use App\Models\Client;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DemandeLocationController extends Controller
 {
@@ -92,31 +93,188 @@ class DemandeLocationController extends Controller
         return response()->json(['message' => 'Demande acceptée avec succès']);
     }
 
+    /******************************************************************
+     * Biens d'un proprietaire 
+     * ****************************************************************
+     */
     /**
-     * Liste de demandes de locations
+     * Demandes attentes
+     */
+    public function DemandesEnAttente($proprietaireId)
+    {
+        $demandes = DB::table('demande_locations')
+            ->join('appartements', 'demande_locations.appartement_id', '=', 'appartements.id')
+            ->join('clients', 'demande_locations.client_id', '=', 'clients.id')
+            ->where('appartements.disponibilite', true) // Biens disponibles (en attente)
+            ->where('demande_locations.etat_validation', 'en attente')
+            ->where('appartements.user_id', $proprietaireId) // Filtrer par propriétaire
+            ->select(
+                'clients.nom',
+                'clients.prenom',
+                'clients.adresse',
+                'clients.telephone',
+                'clients.email',
+                'appartements.numero_appartement',
+                'appartements.prix',
+                'appartements.image',
+                'appartements.id as app_id',
+                'appartements.user_id',
+                'demande_locations.etat_validation',
+                'demande_locations.paiement'
+            )
+            ->get();
+
+        return response()->json($demandes);
+    }
+
+    /**
+     * Demandes acceptees
+     */
+    public function DemandesAcceptees($proprietaireId)
+    {
+        $demandes = DB::table('demande_locations')
+            ->join('appartements', 'demande_locations.appartement_id', '=', 'appartements.id')
+            ->join('clients', 'demande_locations.client_id', '=', 'clients.id')
+            ->where('appartements.disponibilite', false) // Biens non disponibles (acceptés)
+            ->where('demande_locations.etat_validation', 'en attente')
+            ->where('appartements.user_id', $proprietaireId) // Filtrer par propriétaire
+            ->select(
+                'clients.nom',
+                'clients.prenom',
+                'clients.adresse',
+                'clients.telephone',
+                'clients.email',
+                'appartements.numero_appartement',
+                'appartements.prix',
+                'appartements.image',
+                'appartements.id as app_id',
+                'appartements.user_id',
+                'demande_locations.etat_validation',
+                'demande_locations.paiement'
+            )
+            ->get();
+
+        return response()->json($demandes);
+    }
+
+    /******************** FIN PROP ************************** */
+
+    /**
+     * Liste de demandes de locations en attentes
      */
 
-     public function listeDemandesEnAttente()
-     {
-         $demandes = DB::table('demande_locations')
-             ->join('appartements', 'demande_locations.appartement_id', '=', 'appartements.id')
-             ->join('clients', 'demande_locations.client_id', '=', 'clients.id')
-             ->where('appartements.disponibilite', true)
-             ->where('demande_locations.etat_validation', 'en attente')
-             ->select(
-                 'clients.nom',
-                 'clients.prenom',
-                 'clients.adresse',
-                 'clients.telephone',
-                 'appartements.numero_appartement', // Assurez-vous que ce champ existe
-                 'appartements.prix',
-                 'demande_locations.etat_validation',
-                 'demande_locations.paiement'
-             )
-             ->get();
-     
-         return response()->json($demandes);
-     }
+    public function listeDemandesEnAttente()
+    {
+        $demandes = DB::table('demande_locations')
+            ->join('appartements', 'demande_locations.appartement_id', '=', 'appartements.id')
+            ->join('clients', 'demande_locations.client_id', '=', 'clients.id')
+            ->where('appartements.disponibilite', true)
+            ->where('demande_locations.etat_validation', 'en attente')
+            ->select(
+                'clients.nom',
+                'clients.prenom',
+                'clients.adresse',
+                'clients.telephone',
+                'clients.email', // Ajout de l'email du client
+                'appartements.numero_appartement', // Assurez-vous que ce champ existe
+                'appartements.prix',
+                'appartements.image',
+                'appartements.id as app_id',
+                'appartements.user_id',
+                'demande_locations.etat_validation',
+                'demande_locations.paiement'
+            )
+            ->get();
+
+        return response()->json($demandes);
+    }
+
+    /**
+     * Liste de demandes de locations en attentes
+     */
+
+    public function listeDemandesAcceptees()
+    {
+        $demandes = DB::table('demande_locations')
+            ->join('appartements', 'demande_locations.appartement_id', '=', 'appartements.id')
+            ->join('clients', 'demande_locations.client_id', '=', 'clients.id')
+            ->where('appartements.disponibilite', false)
+            ->where('demande_locations.etat_validation', 'en attente')
+            ->select(
+                'clients.nom',
+                'clients.prenom',
+                'clients.adresse',
+                'clients.telephone',
+                'clients.email', // Ajout de l'email du client
+                'appartements.numero_appartement', // Assurez-vous que ce champ existe
+                'appartements.prix',
+                'appartements.image',
+                'appartements.id as app_id',
+                'appartements.user_id',
+                'demande_locations.etat_validation',
+                'demande_locations.paiement'
+            )
+            ->get();
+
+        return response()->json($demandes);
+    }
+
+    /**
+     * nombre de demande (attentes & acceptees)
+     */
+    public function nombreDemandes()
+    {
+        $nombreEnAttente = DB::table('demande_locations')
+            ->join('appartements', 'demande_locations.appartement_id', '=', 'appartements.id')
+            ->where('appartements.disponibilite', 1)
+            ->count();
+
+        $nombreAcceptees = DB::table('demande_locations')
+            ->join('appartements', 'demande_locations.appartement_id', '=', 'appartements.id')
+            ->where('appartements.disponibilite', 0)
+            ->count();
+
+        return response()->json([
+            'nombre_en_attente' => $nombreEnAttente,
+            'nombre_acceptees' => $nombreAcceptees
+        ]);
+    }
+
+
+
+    /**
+     * Details demandes
+     */
+    public function detailsDemandeLocation($id)
+    {
+        $demande = DB::table('demande_locations')
+            ->join('appartements', 'demande_locations.appartement_id', '=', 'appartements.id')
+            ->join('clients', 'demande_locations.client_id', '=', 'clients.id')
+            ->where('demande_locations.id', $id)
+            ->select(
+                'clients.nom',
+                'clients.prenom',
+                'clients.adresse',
+                'clients.telephone',
+                'clients.email',
+                'appartements.numero_appartement',
+                'appartements.prix',
+                'appartements.image',
+                'appartements.id as app_id',
+                'appartements.user_id',
+                'demande_locations.etat_validation',
+                'demande_locations.paiement'
+            )
+            ->first(); // Utilisez first() pour obtenir un seul enregistrement
+
+        if (!$demande) {
+            return response()->json(['message' => 'Demande non trouvée'], 404);
+        }
+
+        return response()->json($demande);
+    }
+
+
 
 
      /***

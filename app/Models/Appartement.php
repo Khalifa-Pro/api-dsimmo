@@ -21,6 +21,7 @@ class Appartement extends Model
         'nombre_de_pieces',
         'niveau',
         'numero_appartement',
+        'description',
         'user_id',
     ];
 }
