@@ -146,6 +146,7 @@ class DemandeLocationController extends Controller
                 'clients.email',
                 'appartements.numero_appartement',
                 'appartements.prix',
+                'appartements.adresse as lieu',
                 'appartements.image',
                 'appartements.id as app_id',
                 'appartements.user_id',

@@ -96,17 +96,33 @@ class AppartementController extends Controller
     /***
      * Liste des appartements disponibles
      */
-    public function getAppartements()
+
+     public function getAppartements()
     {
         \Log::info('Récupération des appartements disponibles.');
 
         // Récupérer les appartements dont la disponibilité est à true
         $appartementsDisponibles = Appartement::where('disponibilite', true)->get();
 
-        \Log::info('Appartements disponibles récupérés : ', $appartementsDisponibles->toArray());
+        // Filtrer pour enlever les redondances d'image
+        $appartementsUniques = $appartementsDisponibles->unique('image');
 
-        return response()->json($appartementsDisponibles, 200);
+        \Log::info('Appartements disponibles sans redondance d\'images récupérés : ', $appartementsUniques->toArray());
+
+        return response()->json($appartementsUniques->values()->all(), 200);
     }
+
+    // public function getAppartements()
+    // {
+    //     \Log::info('Récupération des appartements disponibles.');
+
+    //     // Récupérer les appartements dont la disponibilité est à true
+    //     $appartementsDisponibles = Appartement::where('disponibilite', true)->get();
+
+    //     \Log::info('Appartements disponibles récupérés : ', $appartementsDisponibles->toArray());
+
+    //     return response()->json($appartementsDisponibles, 200);
+    // }
 
     public function getAllApp(){
         $appartementsDisponibles = Appartement::all();
